@@ -569,7 +569,7 @@
           <label class="field" [class.span-2]="!needsSupervisor() || isManagerActor()">
             <span class="field__label">Assigned Role <span class="field__req">*</span></span>
             <select class="select" formControlName="role" (change)="onRoleChange()" [attr.disabled]="editing() && !canChangeRoleInEdit() ? true : null">
-              <option *ngFor="let r of displayedRoles()" [value]="r">{{ label(r) }}</option>
+              <option *ngFor="let r of hierarchyRoleOptions()" [value]="r.value">{{ r.label }}</option>
             </select>
             <span class="field__hint" *ngIf="editing() && !canChangeRoleInEdit()">
               Role cannot be modified because target user rank equals or exceeds your role rank.

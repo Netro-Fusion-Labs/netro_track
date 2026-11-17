@@ -1,16 +1,49 @@
 <section class="rh-page">
 
+  <!-- Platform Admin: Tenant Selector Bar -->
+  @if (isPlatformAdmin()) {
+    <div class="rh-tenant-bar">
+      <div class="rh-tenant-bar-label">
+        <netro-icon name="building" [size]="14" />
+        <span>Managing hierarchy for</span>
+      </div>
+
+      @if (companiesLoading()) {
+        <div class="rh-tenant-skeleton"></div>
+      } @else {
+        <div class="rh-tenant-tabs">
+          @for (company of companies(); track company.id) {
+            <button
+              type="button"
+              class="rh-tenant-tab"
+              [class.rh-tenant-tab--active]="selectedCompanyId() === company.id"
+              (click)="selectCompany(company.id)"
+            >
+              <span class="rh-tenant-code">{{ company.code }}</span>
+              <span class="rh-tenant-name">{{ company.name }}</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
   <!-- Page Header -->
   <header class="rh-header">
     <div class="rh-header-text">
-      <h1 class="rh-title">Role Hierarchy</h1>
+      <h1 class="rh-title">
+        Role Hierarchy
+        @if (isPlatformAdmin() && selectedCompany()) {
+          <span class="rh-title-tenant">— {{ selectedCompany()!.name }}</span>
+        }
+      </h1>
       <p class="rh-subtitle">
-        Define your company's approval authority chain. Lower rank numbers mean higher authority.
+        Define the approval authority chain. Lower rank numbers mean higher authority.
         <strong>Rank 1</strong> is always reserved for the Company Admin.
       </p>
     </div>
     @if (canManage()) {
-      <button class="btn-primary" (click)="openCreate()">
+      <button class="btn-primary" (click)="openCreate()" [disabled]="isPlatformAdmin() && !selectedCompanyId()">
         <netro-icon name="plus" />
         Add Role
       </button>
@@ -40,7 +73,13 @@
     <div class="rh-empty">
       <netro-icon name="hierarchy" class="rh-empty-icon" />
       <h3>No Roles Defined</h3>
-      <p>Create roles to define the approval authority chain for your company.</p>
+      <p>
+        @if (isPlatformAdmin() && selectedCompany()) {
+          <strong>{{ selectedCompany()!.name }}</strong> has no custom roles yet.
+        } @else {
+          Create roles to define the approval authority chain.
+        }
+      </p>
       @if (canManage()) {
         <button class="btn-primary" (click)="openCreate()">Create First Role</button>
       }
@@ -152,7 +191,12 @@
   <aside class="rh-drawer" role="dialog" [attr.aria-label]="drawerMode() === 'create' ? 'Add Role' : 'Edit Role'">
 
     <div class="rh-drawer-header">
-      <h2>{{ drawerMode() === 'create' ? 'Add Role' : 'Edit Role' }}</h2>
+      <div>
+        <h2>{{ drawerMode() === 'create' ? 'Add Role' : 'Edit Role' }}</h2>
+        @if (isPlatformAdmin() && selectedCompany()) {
+          <p class="rh-drawer-company">{{ selectedCompany()!.name }} [{{ selectedCompany()!.code }}]</p>
+        }
+      </div>
       <button class="rh-drawer-close" (click)="closeDrawer()">×</button>
     </div>
 

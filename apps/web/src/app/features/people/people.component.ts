@@ -10,7 +10,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
 import { PulseService } from '../../core/services/pulse.service';
 import { CAN, ROLE_LABEL, Role, hasRole, outranks, roleLabel } from '../../core/models/roles';
 import { API } from '../../core/models/endpoints';
-import { AttendancePolicy, AttendanceRecord, Company, Person, PersonTimelineEvent, directReports } from '../../core/models/domain';
+import { AttendancePolicy, AttendanceRecord, Company, CompanyRole, Person, PersonTimelineEvent, directReports } from '../../core/models/domain';
 import { clock, duration, titleCase } from '../../core/utils/format';
 
 import { NetroIcon, IconName } from '../../ui/icon';
@@ -122,6 +122,7 @@ export class PeopleComponent {
   readonly companies = signal<Company[]>([]);
   readonly accessGroups = signal<any[]>([]);
   readonly selectedAccessGroupIds = signal<string[]>([]);
+  readonly companyRoles = signal<CompanyRole[]>([]);
   readonly serverErrors = signal<Record<string, string>>({});
 
   readonly actorRole = this.api.role;
@@ -185,6 +186,31 @@ export class PeopleComponent {
       return roles.filter(r => r !== 'SUPER_ADMIN' && r !== 'MASTER_SUPER_ADMIN');
     }
     return roles;
+  });
+
+  /**
+   * Role options built from the tenant's CompanyRole hierarchy.
+   * Falls back to displayedRoles (system defaults) when no hierarchy is configured.
+   * Each option maps the hierarchy role's custom name back to the system Role code for submission.
+   */
+  readonly hierarchyRoleOptions = computed<Array<{ value: Role; label: string; rank: number }>>(() => {
+    const hierarchyRoles = this.companyRoles();
+    const allowed = new Set(this.displayedRoles());
+
+    if (hierarchyRoles.length > 0) {
+      return hierarchyRoles
+        .filter(r => r.isActive && !r.isSystem) // exclude Company Admin (rank 1, isSystem)
+        .map(r => ({
+          value: r.code as Role,
+          label: r.name,
+          rank: r.rank,
+        }))
+        .filter(r => allowed.has(r.value)) // never offer roles the actor cannot assign
+        .sort((a, b) => a.rank - b.rank);
+    }
+
+    // Fallback: no hierarchy defined yet — use system role labels
+    return this.displayedRoles().map(r => ({ value: r, label: ROLE_LABEL[r] ?? r, rank: 0 }));
   });
 
   readonly targetRole = signal<Role>('EMPLOYEE');
@@ -543,8 +569,8 @@ export class PeopleComponent {
     this.serverErrors.set({});
     this.isDesignationChanged.set(false);
 
-    const roles = this.displayedRoles();
-    const defaultRole: Role = this.isManagerActor() ? 'EMPLOYEE' : (roles[roles.length - 1] ?? 'EMPLOYEE');
+    // Temporary default before hierarchy loads — will be updated reactively by loadCompanyRoles callback.
+    const defaultRole: Role = this.isManagerActor() ? 'EMPLOYEE' : 'EMPLOYEE';
     this.targetRole.set(defaultRole);
 
     const defaultManagerId = this.isManagerActor() ? (this.api.user()?.id || '') : '';
@@ -580,6 +606,7 @@ export class PeopleComponent {
     this.loadBranches(compId);
     this.loadDepartments(compId);
     this.loadAccessGroups(compId);
+    this.loadCompanyRoles(compId);
     this.editorOpen.set(true);
   }
 
@@ -627,6 +654,7 @@ export class PeopleComponent {
       this.loadBranches(targetCompanyId);
       this.loadDepartments(targetCompanyId);
       this.loadAccessGroups(targetCompanyId);
+      this.loadCompanyRoles(targetCompanyId);
     }
     
     this.editorOpen.set(true);
@@ -640,6 +668,30 @@ export class PeopleComponent {
     } else {
       this.selectedAccessGroupIds.set([...current, id]);
     }
+  }
+
+  loadCompanyRoles(companyId?: string): void {
+    const cid = companyId || this.form.controls.companyId.value || this.api.user()?.companyId;
+    if (!cid) return;
+    const query: Record<string, string> = {};
+    // For platform admins managing a tenant, pass companyId as query param
+    if (this.isSuperAdmin() && cid) query['companyId'] = cid;
+    this.api.get<CompanyRole[]>(API.roleHierarchy, query).subscribe({
+      next: (res) => {
+        this.companyRoles.set(Array.isArray(res.data) ? res.data : []);
+        // In create mode: default to the lowest-privilege role (highest rank number).
+        // hierarchyRoleOptions() is sorted ascending by rank — last entry = least privileged.
+        if (!this.editing() && !this.isManagerActor()) {
+          const opts = this.hierarchyRoleOptions();
+          const lowestRole = opts[opts.length - 1]?.value;
+          if (lowestRole) {
+            this.form.controls.role.setValue(lowestRole);
+            this.targetRole.set(lowestRole);
+          }
+        }
+      },
+      error: () => this.companyRoles.set([]),
+    });
   }
 
   private loadAccessGroups(companyId?: string): void {
@@ -676,6 +728,7 @@ export class PeopleComponent {
     this.loadBranches(companyId);
     this.loadDepartments(companyId);
     this.loadAccessGroups(companyId);
+    this.loadCompanyRoles(companyId);
   }
 
   onRoleChange(): void {

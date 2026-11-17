@@ -73,4 +73,25 @@ export class ReportRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  /** Inspections within a date range, optionally filtered by userId. */
+  async getInspectionsReport(
+    companyId: string,
+    startDate: Date,
+    endDate: Date,
+    userId?: string
+  ) {
+    return prisma.inspection.findMany({
+      where: {
+        companyId,
+        deletedAt: null,
+        createdAt: { gte: startDate, lte: endDate },
+        ...(userId ? { userId } : {}),
+      },
+      include: {
+        user: { select: { id: true, name: true, employeeId: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

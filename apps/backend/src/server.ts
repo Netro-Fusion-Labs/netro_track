@@ -1,6 +1,8 @@
 import http from 'http';
 import { app } from './app';
 import { initSocketServer } from './shared/config/socket';
+import { closeRedis } from './shared/config/redis';
+import { startBackgroundJobs, stopBackgroundJobs } from './modules/jobs/jobs.lifecycle';
 import pino from 'pino';
 
 const logger = pino({
@@ -17,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 const httpServer = http.createServer(app);
 
 let server: http.Server;
+let shuttingDown = false;
 
 (async () => {
   // Log Postgres connection type
@@ -27,6 +30,7 @@ let server: http.Server;
   logger.info(`Database: Connected to PostgreSQL via ${pgConnectionType} [${maskedDbUrl}]`);
 
   await initSocketServer(httpServer);
+  await startBackgroundJobs();
 
   server = httpServer.listen(PORT, () => {
     logger.info(`Server running on port ${PORT} in ${process.env.NODE_ENV ?? 'development'} mode`);
@@ -35,14 +39,27 @@ let server: http.Server;
 
 // Graceful cleanup for ts-node-dev hot-reloading and termination signals
 const handleShutdown = (signal: string) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
   logger.info(`Received ${signal}. Closing HTTP server gracefully...`);
+
+  const finish = async () => {
+    try {
+      await stopBackgroundJobs();
+      await closeRedis();
+    } catch (err) {
+      logger.error({ err }, 'Error during background shutdown');
+    }
+    logger.info('HTTP server closed cleanly.');
+    process.exit(0);
+  };
+
   if (server) {
     server.close(() => {
-      logger.info('HTTP server closed cleanly.');
-      process.exit(0);
+      void finish();
     });
   } else {
-    process.exit(0);
+    void finish();
   }
 };
 

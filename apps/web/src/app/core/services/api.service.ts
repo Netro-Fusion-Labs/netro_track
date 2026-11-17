@@ -155,6 +155,16 @@ export class ApiService {
     }).pipe(finalize(() => this.loading.stop()));
   }
 
+  /** Download a binary/text attachment (CSV/PDF reports). */
+  download(url: string, query?: Record<string, QueryValue>): Observable<Blob> {
+    this.loading.start();
+    return this.http.get(`${this.baseUrl}${url}`, {
+      headers: this.headers(),
+      params: this.toParams(query),
+      responseType: 'blob',
+    }).pipe(finalize(() => this.loading.stop()));
+  }
+
   post<T = unknown>(url: string, body: unknown = {}): Observable<ApiEnvelope<T>> {
     this.loading.start();
     return this.http.post<ApiEnvelope<T>>(`${this.baseUrl}${url}`, body, { headers: this.headers() })

@@ -4,13 +4,26 @@
     description="Operational extracts over a date range. Employees see their own records; managers and above see their scope."
   >
     <div slot="actions" class="row row--nowrap">
-      <netro-badge tone="neutral">Coming Soon</netro-badge>
+      <button
+        type="button"
+        class="btn btn--default"
+        [disabled]="exporting() || loading()"
+        (click)="download('csv')"
+      >
+        <netro-icon [name]="exporting() ? 'spinner' : 'download'" [size]="14" [spin]="exporting()" />
+        CSV
+      </button>
+      <button
+        type="button"
+        class="btn btn--default"
+        [disabled]="exporting() || loading()"
+        (click)="download('pdf')"
+      >
+        <netro-icon [name]="exporting() ? 'spinner' : 'policy'" [size]="14" [spin]="exporting()" />
+        PDF
+      </button>
     </div>
   </netro-page-header>
-
-  <netro-alert tone="info" heading="Feature Coming Soon">
-    The Reports & Advanced Analytics module is currently under active development and will be released in an upcoming platform update.
-  </netro-alert>
 
   <netro-panel>
     <netro-tabs [tabs]="tabs" [value]="kind()" label="Report type" (valueChange)="select($event)" />
@@ -37,7 +50,11 @@
       <button type="button" class="btn btn--default" (click)="generate()">Try again</button>
     </netro-state>
   } @else if (!ran()) {
-    <netro-state icon="chart" title="Choose a range and generate" body="Attendance, visits and sales each summarise the same window so you can compare presence, activity and outcome." />
+    <netro-state
+      icon="chart"
+      title="Choose a range and generate"
+      body="Attendance, visits, sales and inspections summarise the same window so you can compare presence, activity and outcome. Use CSV or PDF to export."
+    />
   } @else if (kind() === 'attendance' && attendance()) {
     <section class="metrics">
       <netro-metric label="Shifts" [value]="attendance()!.totalRecords" icon="clock" />
@@ -126,6 +143,38 @@
                 <td>{{ row.employee?.name || '—' }}</td>
                 <td class="num tnum">{{ money(row.totalAmount) }}</td>
                 <td class="col-hide-sm tnum">{{ row.createdAt | date: 'mediumDate' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      }
+    </netro-panel>
+  } @else if (kind() === 'inspections' && inspections()) {
+    <section class="metrics">
+      <netro-metric label="Inspections" [value]="inspections()!.totalRecords" icon="inspect" />
+    </section>
+    <netro-panel [flush]="true" padding="none" heading="Inspection log" [description]="inspections()!.startDate + ' → ' + inspections()!.endDate">
+      @if (!inspections()!.records.length) {
+        <netro-state icon="inspect" [inline]="true" title="No inspections in this range" />
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Site</th>
+                <th scope="col">Inspector</th>
+                <th scope="col">Category</th>
+                <th scope="col" class="col-hide-md">Observation</th>
+                <th scope="col">When</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of inspections()!.records">
+                <td>{{ row.siteName || '—' }}</td>
+                <td>{{ row.employee?.name || '—' }}</td>
+                <td>{{ row.category || '—' }}</td>
+                <td class="col-hide-md cell-truncate">{{ row.observation || '—' }}</td>
+                <td class="tnum">{{ row.createdAt | date: 'short' }}</td>
               </tr>
             </tbody>
           </table>

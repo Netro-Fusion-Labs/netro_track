@@ -46,7 +46,6 @@ const MORE_MENU_ITEMS: MoreMenuItem[] = [
     icon: 'customers',
     permission: 'customers.accounts.view',
     roles: ['SUPER_ADMIN', 'MASTER_SUPER_ADMIN', 'COMPANY_ADMIN', 'MANAGER', 'HR'],
-    unreleased: true,
     onPress: (nav) => nav.navigate('Customers'),
   },
   {
@@ -54,7 +53,6 @@ const MORE_MENU_ITEMS: MoreMenuItem[] = [
     icon: 'products',
     permission: 'products.catalogue.view',
     roles: ['SUPER_ADMIN', 'MASTER_SUPER_ADMIN', 'COMPANY_ADMIN', 'MANAGER', 'HR'],
-    unreleased: true,
     onPress: (nav) => nav.navigate('Products'),
   },
   {
@@ -62,7 +60,6 @@ const MORE_MENU_ITEMS: MoreMenuItem[] = [
     icon: 'visits',
     permission: 'visits.records.view',
     roles: ['SUPER_ADMIN', 'MASTER_SUPER_ADMIN', 'COMPANY_ADMIN', 'MANAGER', 'HR'],
-    unreleased: true,
     onPress: (nav) => nav.navigate('Visits'),
   },
   {
@@ -70,7 +67,6 @@ const MORE_MENU_ITEMS: MoreMenuItem[] = [
     icon: 'sales',
     permission: 'sales.orders.view',
     roles: ['SUPER_ADMIN', 'MASTER_SUPER_ADMIN', 'COMPANY_ADMIN', 'MANAGER', 'HR'],
-    unreleased: true,
     onPress: (nav) => nav.navigate('Sales'),
   },
   {
@@ -78,7 +74,6 @@ const MORE_MENU_ITEMS: MoreMenuItem[] = [
     icon: 'inspect',
     permission: 'inspections.audits.view',
     roles: ['SUPER_ADMIN', 'MASTER_SUPER_ADMIN', 'COMPANY_ADMIN', 'MANAGER', 'HR'],
-    unreleased: true,
     onPress: (nav) => nav.navigate('Inspections'),
   },
 ];

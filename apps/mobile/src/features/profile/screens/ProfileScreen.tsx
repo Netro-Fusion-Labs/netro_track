@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Alert, Switch } from 'react-native';
 import { useTheme } from '../../../shared/theme/ThemeProvider';
 import { typography } from '../../../shared/theme/typography';
 import { useAuthStore } from '../../auth/stores/authStore';
@@ -26,6 +26,13 @@ import { ROLE_DISPLAY_LABELS, UserRole } from '@netrotrack/shared';
 import * as ImagePicker from 'react-native-image-picker';
 import { profileService } from '../services/profile.service';
 import { useQueryClient } from '@tanstack/react-query';
+import {
+  biometricLabel,
+  getBiometricAvailability,
+  isBiometricUnlockEnabled,
+  setBiometricUnlockEnabled,
+} from '../../auth/services/biometricAuth';
+import { APP_BUILD, APP_VERSION } from '../../../shared/constants/appVersion';
 
 export function ProfileScreen({ navigation }: any) {
   const theme = useTheme();
@@ -41,6 +48,23 @@ export function ProfileScreen({ navigation }: any) {
   const [termsVisible, setTermsVisible] = useState(false);
   const [privacyVisible, setPrivacyVisible] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(isBiometricUnlockEnabled());
+  const [biometricTypeLabel, setBiometricTypeLabel] = useState('Biometrics');
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { available, biometryType } = await getBiometricAvailability();
+      if (cancelled) return;
+      setBiometricAvailable(available);
+      setBiometricTypeLabel(biometricLabel(biometryType));
+      setBiometricEnabled(isBiometricUnlockEnabled());
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Filter org chart for other members in company
   const companyOrgMembers = orgChartData.filter((u: any) => u.id !== user?.id);
@@ -246,6 +270,31 @@ export function ProfileScreen({ navigation }: any) {
           <ProfessionalTimeline events={timelineEvents} />
         </Section>
 
+        {biometricAvailable && (
+          <Section title="Security">
+            <Card style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+              <View style={styles.infoRow}>
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text style={[typography.headingSm, { color: theme.colors.text.primary }]}>
+                    Unlock with {biometricTypeLabel}
+                  </Text>
+                  <Text style={[typography.caption, { color: theme.colors.text.secondary, marginTop: 2 }]}>
+                    Use device biometrics after MPIN is set on this phone
+                  </Text>
+                </View>
+                <Switch
+                  value={biometricEnabled}
+                  onValueChange={(value) => {
+                    setBiometricUnlockEnabled(value);
+                    setBiometricEnabled(value);
+                  }}
+                  trackColor={{ true: theme.colors.brand.primary, false: theme.colors.surface.border }}
+                />
+              </View>
+            </Card>
+          </Section>
+        )}
+
         {/* Legal Section */}
         <Section title="Legal & Privacy">
           <ListItem
@@ -260,7 +309,7 @@ export function ProfileScreen({ navigation }: any) {
             title="Privacy Policy"
             subtitle="Data protection and privacy policy"
             showChevron
-            onPress={() => setPrivacyVisible(false)}
+            onPress={() => setPrivacyVisible(true)}
           />
         </Section>
 
@@ -278,6 +327,9 @@ export function ProfileScreen({ navigation }: any) {
         <View style={styles.aboutBrand}>
           <BrandLogo variant="banner" size={200} />
           <Text style={[typography.caption, { color: theme.colors.text.tertiary, marginTop: 8, textAlign: 'center' }]}>
+            App {APP_VERSION} (build {APP_BUILD})
+          </Text>
+          <Text style={[typography.caption, { color: theme.colors.text.tertiary, marginTop: 4, textAlign: 'center' }]}>
             Track. Manage. Perform. · Powered by NetroFusion Labs
           </Text>
         </View>

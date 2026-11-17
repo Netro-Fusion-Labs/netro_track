@@ -113,8 +113,8 @@ export function ManagerDashboard({ navigation }: { navigation: any }) {
               { label: 'Org Chart', icon: 'employees', screen: 'OrgChart', params: undefined, unreleased: false },
               { label: 'Requests', icon: 'attendance', screen: 'Employees', params: { screen: 'ManagerRegularizations' }, badgeCount: pendingRequests.length, unreleased: false },
               { label: 'Visits', icon: 'visits', screen: 'Visits', params: undefined, unreleased: true },
-              { label: 'Sales', icon: 'sales', screen: 'Sales', params: undefined, unreleased: true },
-              { label: 'Inspections', icon: 'inspect', screen: 'Inspections', params: undefined, unreleased: true },
+              { label: 'Sales', icon: 'sales', screen: 'Sales', params: undefined, unreleased: false },
+              { label: 'Inspections', icon: 'inspect', screen: 'Inspections', params: undefined, unreleased: false },
             ].map((act) => (
               <TouchableOpacity
                 key={act.label}

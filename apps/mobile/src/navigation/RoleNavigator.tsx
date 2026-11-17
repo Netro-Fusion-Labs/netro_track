@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Platform, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -320,17 +320,7 @@ function CustomBottomTabBar({ state, descriptors, navigation, insets, theme }: a
         }
 
         const isFocused = state.index === index;
-        const isUnreleased = route.name === 'Sales' || route.name === 'Inspections' || route.name === 'Reports' || route.name === 'Customers' || route.name === 'Products';
-
         const onPress = () => {
-          if (isUnreleased) {
-            Alert.alert(
-              'Feature Coming Soon',
-              `${options.tabBarLabel ?? route.name} is currently in active development and will be released in an upcoming update.`
-            );
-            return;
-          }
-
           const event = navigation.emit({
             type: 'tabPress',
             target: route.key,
@@ -370,7 +360,7 @@ function CustomBottomTabBar({ state, descriptors, navigation, insets, theme }: a
 
         const label = options.tabBarLabel ?? route.name;
         const activeColor = theme.colors.brand.primary;
-        const inactiveColor = isUnreleased ? theme.colors.text.tertiary : theme.colors.text.secondary;
+        const inactiveColor = theme.colors.text.secondary;
         const iconName = ROUTE_ICON_MAP[route.name] ?? 'home';
 
         return (
@@ -387,7 +377,6 @@ function CustomBottomTabBar({ state, descriptors, navigation, insets, theme }: a
               paddingHorizontal: 2,
               borderRadius: theme.borderRadius.lg,
               backgroundColor: isFocused ? theme.colors.surface.subtle : 'transparent',
-              opacity: isUnreleased ? 0.4 : 1,
             }}
             activeOpacity={0.8}
           >
@@ -405,7 +394,7 @@ function CustomBottomTabBar({ state, descriptors, navigation, insets, theme }: a
                   fontWeight: isFocused ? '600' : '500',
                   marginTop: 2,
                   textAlign: 'center',
-                  fontSize: isUnreleased ? 10 : 11,
+                  fontSize: 11,
                 },
               ]}
             >
@@ -501,8 +490,8 @@ const hiddenScreens = [
   { name: 'Customers', component: CustomerListScreen },
   { name: 'Reports', component: ReportsScreen },
   { name: 'Products', component: ProductsScreen },
-  { name: 'Sales', component: SalesScreen },
-  { name: 'Inspections', component: InspectionsScreen },
+  { name: 'Sales', component: SalesStackScreen },
+  { name: 'Inspections', component: InspectionsStackScreen },
   { name: 'AttendanceHistory', component: AttendanceHistoryScreen },
   { name: 'PlatformCapabilities', component: PlatformCapabilitiesScreen },
   { name: 'AccessGroups', component: AccessGroupsScreen },
@@ -511,11 +500,13 @@ const hiddenScreens = [
 function FieldEmployeeTabs() {
   const tabBar = useRoleTabBar();
   const hasAttendance = useHasModule('attendance');
+  const hasVisits = useHasModule('visits');
+  const hasSales = useHasModule('sales');
+  const hasInspections = useHasModule('inspections');
 
   return (
     <Tab.Navigator tabBar={tabBar} initialRouteName="Home" screenOptions={{ headerShown: false }} backBehavior="history">
       <Tab.Screen name="Home" component={EmployeeDashboard} options={{ tabBarLabel: 'Dashboard' }} />
-      <Tab.Screen name="OrgChart" component={OrgChartScreen} options={{ tabBarLabel: 'Org Chart' }} />
       <Tab.Screen
         name="Attendance"
         component={AttendanceStackScreen}
@@ -525,11 +516,40 @@ function FieldEmployeeTabs() {
             : { tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }
         }
       />
-      <Tab.Screen name="Visits" component={VisitsStackScreen} options={{ tabBarLabel: 'Visits' }} />
+      <Tab.Screen
+        name="Visits"
+        component={VisitsStackScreen}
+        options={
+          hasVisits
+            ? { tabBarLabel: 'Visits' }
+            : { tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }
+        }
+      />
+      <Tab.Screen
+        name="Sales"
+        component={SalesStackScreen}
+        options={
+          hasSales
+            ? { tabBarLabel: 'Sales' }
+            : { tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }
+        }
+      />
+      <Tab.Screen
+        name="Inspections"
+        component={InspectionsStackScreen}
+        options={
+          hasInspections
+            ? { tabBarLabel: 'Inspect' }
+            : { tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }
+        }
+      />
 
-      {hiddenScreens.map((s) => (
-        <Tab.Screen key={s.name} name={s.name} component={s.component} options={{ tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }} />
-      ))}
+      {hiddenScreens
+        .filter((s) => s.name !== 'Sales' && s.name !== 'Inspections')
+        .map((s) => (
+          <Tab.Screen key={s.name} name={s.name} component={s.component} options={{ tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }} />
+        ))}
+      <Tab.Screen name="OrgChart" component={OrgChartScreen} options={{ tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }} />
       <Tab.Screen name="Employees" component={EmployeesStackScreen} options={{ tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }} />
       <Tab.Screen name="TeamMap" component={TeamMapScreen} options={{ tabBarButton: () => null, tabBarItemStyle: { display: 'none' } }} />
     </Tab.Navigator>

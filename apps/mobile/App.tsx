@@ -10,6 +10,11 @@ import RootNavigator from './src/navigation/index';
 import { startSyncEngine } from './src/shared/utils/syncEngine';
 import { OfflineBanner } from './src/shared/components/OfflineBanner';
 import { GlobalLoadingBar } from './src/shared/components/GlobalLoadingBar';
+import {
+  initPushNotifications,
+  syncPushTokenAfterLogin,
+  teardownPushNotifications,
+} from './src/services/notifications/pushNotifications';
 
 const SPLASH_BACKGROUND = '#E8ECF0';
 
@@ -39,12 +44,23 @@ function useStoresHydrated(): boolean {
 
 function App() {
   const hydrated = useStoresHydrated();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     if (hydrated) {
       startSyncEngine();
+      void initPushNotifications();
     }
+    return () => {
+      teardownPushNotifications();
+    };
   }, [hydrated]);
+
+  useEffect(() => {
+    if (hydrated && isAuthenticated) {
+      void syncPushTokenAfterLogin();
+    }
+  }, [hydrated, isAuthenticated]);
 
   return (
     <SafeAreaProvider>

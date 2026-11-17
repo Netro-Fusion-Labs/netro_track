@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const reportFormatSchema = z.enum(['json', 'csv', 'pdf']).default('json');
+
 // ── Base report query (shared across all report types) ────────────────────────
 const baseReportQuerySchema = z.object({
   startDate: z
@@ -13,6 +15,7 @@ const baseReportQuerySchema = z.object({
     .uuid('Invalid user ID')
     .optional()
     .describe('Filter by specific employee (admin/manager only)'),
+  format: reportFormatSchema,
 });
 
 // ── Attendance report query ───────────────────────────────────────────────────
@@ -41,3 +44,8 @@ export const salesReportQuerySchema = baseReportQuerySchema.extend({
 });
 
 export type SalesReportQuery = z.infer<typeof salesReportQuerySchema>;
+
+// ── Inspections report query ──────────────────────────────────────────────────
+export const inspectionsReportQuerySchema = baseReportQuerySchema;
+
+export type InspectionsReportQuery = z.infer<typeof inspectionsReportQuerySchema>;

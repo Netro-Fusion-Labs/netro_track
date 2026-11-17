@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { API } from '../../core/models/endpoints';
-import { CompanyRole } from '../../core/models/domain';
+import { Company, CompanyRole } from '../../core/models/domain';
 import { hasRole, CAN } from '../../core/models/roles';
 import { NetroIcon } from '../../ui/icon';
 
@@ -17,7 +17,23 @@ import { NetroIcon } from '../../ui/icon';
 export class RoleHierarchyComponent implements OnInit {
   private readonly api = inject(ApiService);
 
-  // ── State ──────────────────────────────────────────────────────────────────
+  // ── Platform-level tenant picker ───────────────────────────────────────────
+  /** True when the signed-in user is a platform admin (SUPER_ADMIN / MASTER_SUPER_ADMIN). */
+  readonly isPlatformAdmin = computed(() =>
+    this.api.role() === 'SUPER_ADMIN' || this.api.role() === 'MASTER_SUPER_ADMIN'
+  );
+
+  companies = signal<Company[]>([]);
+  companiesLoading = signal(false);
+
+  /** The tenant whose hierarchy is currently being viewed / edited. */
+  selectedCompanyId = signal<string | null>(null);
+
+  readonly selectedCompany = computed(() =>
+    this.companies().find((c) => c.id === this.selectedCompanyId()) ?? null
+  );
+
+  // ── Role state ─────────────────────────────────────────────────────────────
   roles = signal<CompanyRole[]>([]);
   loading = signal(true);
   saving = signal(false);
@@ -55,6 +71,40 @@ export class RoleHierarchyComponent implements OnInit {
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
   ngOnInit(): void {
+    if (this.isPlatformAdmin()) {
+      this.loadCompanies();
+    } else {
+      this.loadRoles();
+    }
+  }
+
+  // ── Company list (platform admins only) ────────────────────────────────────
+  loadCompanies(): void {
+    this.companiesLoading.set(true);
+    this.api.get<Company[]>(API.companies).subscribe({
+      next: (res) => {
+        const list = Array.isArray(res.data) ? res.data : [];
+        // Exclude the platform company itself — its hierarchy is managed separately
+        const tenants = list.filter((c) => c.code !== 'NETRO');
+        this.companies.set(list); // keep full list for the selector
+        this.companiesLoading.set(false);
+        // Default selection: first tenant company
+        if (tenants.length > 0 && !this.selectedCompanyId()) {
+          this.selectCompany(tenants[0].id);
+        } else if (list.length > 0 && !this.selectedCompanyId()) {
+          this.selectCompany(list[0].id);
+        }
+      },
+      error: () => {
+        this.companiesLoading.set(false);
+        this.loadRoles(); // fallback: load own company
+      },
+    });
+  }
+
+  selectCompany(id: string): void {
+    if (id === this.selectedCompanyId()) return;
+    this.selectedCompanyId.set(id);
     this.loadRoles();
   }
 
@@ -62,7 +112,13 @@ export class RoleHierarchyComponent implements OnInit {
   loadRoles(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.api.get<CompanyRole[]>(API.roleHierarchy).subscribe({
+
+    // For platform admins querying a specific tenant, pass companyId as query param
+    const override = this.selectedCompanyId();
+    const url = API.roleHierarchy;
+    const query = this.isPlatformAdmin() && override ? { companyId: override } : undefined;
+
+    this.api.get<CompanyRole[]>(url, query).subscribe({
       next: (res) => {
         const rows = Array.isArray(res.data) ? res.data : [];
         this.roles.set(rows);
@@ -128,6 +184,15 @@ export class RoleHierarchyComponent implements OnInit {
   }
 
   // ── CRUD ───────────────────────────────────────────────────────────────────
+  /** Build URL query string for platform admins targeting a specific tenant. */
+  private tenantQuery(): string {
+    const override = this.selectedCompanyId();
+    if (this.isPlatformAdmin() && override) {
+      return `?companyId=${override}`;
+    }
+    return '';
+  }
+
   save(): void {
     const f = this.form();
     if (!f.name.trim() || !f.code.trim()) return;
@@ -141,11 +206,12 @@ export class RoleHierarchyComponent implements OnInit {
       isActive: f.isActive,
     };
 
+    const q = this.tenantQuery();
     const mode = this.drawerMode();
     const req =
       mode === 'create'
-        ? this.api.post<CompanyRole>(API.roleHierarchy, payload)
-        : this.api.put<CompanyRole>(API.roleHierarchyItem(this.selectedRole()!.id), payload);
+        ? this.api.post<CompanyRole>(`${API.roleHierarchy}${q}`, payload)
+        : this.api.put<CompanyRole>(`${API.roleHierarchyItem(this.selectedRole()!.id)}${q}`, payload);
 
     req.subscribe({
       next: () => {
@@ -171,7 +237,8 @@ export class RoleHierarchyComponent implements OnInit {
   confirmDelete(): void {
     const id = this.deleteConfirmId();
     if (!id) return;
-    this.api.delete(API.roleHierarchyItem(id)).subscribe({
+    const q = this.tenantQuery();
+    this.api.delete(`${API.roleHierarchyItem(id)}${q}`).subscribe({
       next: () => {
         this.deleteConfirmId.set(null);
         this.loadRoles();
@@ -190,8 +257,6 @@ export class RoleHierarchyComponent implements OnInit {
     if (direction === 'down' && idx >= sorted.length - 1) return;
 
     const swapWith = direction === 'up' ? sorted[idx - 1] : sorted[idx + 1];
-
-    // Guard: system role must stay at rank 1
     if (swapWith.isSystem || role.isSystem) return;
 
     const newOrder = sorted.map((r) => {
@@ -200,7 +265,8 @@ export class RoleHierarchyComponent implements OnInit {
       return { id: r.id, rank: r.rank };
     });
 
-    this.api.put(API.roleHierarchyReorder, { roles: newOrder }).subscribe({
+    const q = this.tenantQuery();
+    this.api.put(`${API.roleHierarchyReorder}${q}`, { roles: newOrder }).subscribe({
       next: () => this.loadRoles(),
       error: (err) => this.error.set(err?.error?.message ?? 'Failed to reorder roles'),
     });

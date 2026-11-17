@@ -15,8 +15,8 @@ export function requirePermission(...requiredSlugs: string[]) {
         return next(new AppError('UNAUTHORIZED', 'Authentication is required', 401));
       }
 
-      // MASTER_SUPER_ADMIN maintains top-level system authority across all endpoints
-      if (req.user.role === 'MASTER_SUPER_ADMIN') {
+      // Platform admins maintain top-level system authority across all endpoints
+      if (req.user.role === 'MASTER_SUPER_ADMIN' || req.user.role === 'SUPER_ADMIN') {
         return next();
       }
 

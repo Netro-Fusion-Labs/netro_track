@@ -105,7 +105,8 @@ export class CompanyRepository {
         },
       });
 
-      // 2a. Create default CompanyRole hierarchy for this company
+      // 2a. Create the system Company Admin role (rank 1, always protected).
+      // Tenants define their own additional roles through the Role Hierarchy UI.
       const companyAdminRole = await tx.companyRole.create({
         data: {
           companyId: company.id,
@@ -114,14 +115,6 @@ export class CompanyRepository {
           rank: 1,
           isSystem: true,
         },
-      });
-      await tx.companyRole.createMany({
-        data: [
-          { companyId: company.id, name: 'HR',       code: 'HR',       rank: 2, isSystem: false },
-          { companyId: company.id, name: 'Manager',   code: 'MANAGER',  rank: 3, isSystem: false },
-          { companyId: company.id, name: 'Employee',  code: 'EMPLOYEE', rank: 5, isSystem: false },
-        ],
-        skipDuplicates: true,
       });
 
       // 2b. Assign the admin user to the Company Admin role

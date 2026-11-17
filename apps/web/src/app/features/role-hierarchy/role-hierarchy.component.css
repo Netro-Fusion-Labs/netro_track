@@ -1,3 +1,108 @@
+/* ── Tenant selector bar (platform admins only) ───────────────────────────── */
+.rh-tenant-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  background: hsl(220 40% 8%);
+  border: 1px solid #334155;
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.rh-tenant-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.rh-tenant-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.rh-tenant-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.rh-tenant-tab:hover {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+.rh-tenant-tab--active {
+  background: hsl(239 84% 18% / .6);
+  border-color: #6366f1;
+}
+
+.rh-tenant-code {
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: monospace;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: hsl(220 80% 15% / .6);
+  color: hsl(220 80% 70%);
+  letter-spacing: 0.04em;
+}
+
+.rh-tenant-tab--active .rh-tenant-code {
+  background: hsl(239 84% 25% / .6);
+  color: #a5b4fc;
+}
+
+.rh-tenant-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.rh-tenant-tab--active .rh-tenant-name {
+  color: #e0e7ff;
+}
+
+.rh-tenant-skeleton {
+  height: 32px;
+  width: 220px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s infinite;
+}
+
+/* Title tenant suffix */
+.rh-title-tenant {
+  font-weight: 400;
+  color: #6366f1;
+  font-size: 1rem;
+  margin-left: 0.25rem;
+}
+
+/* Drawer company sub-label */
+.rh-drawer-company {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0.15rem 0 0;
+}
+
+
 .rh-page {
   padding: var(--space-6, 1.5rem);
   max-width: 780px;

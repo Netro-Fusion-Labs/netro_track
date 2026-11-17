@@ -14,6 +14,7 @@ import { PunchConfig } from '@netrotrack/shared';
 import { ApprovalService } from '../../shared/services/approval.service';
 
 import { calculateHaversineDistance } from '../../shared/utils/distance';
+import { notificationService } from '../notifications/notification.service';
 
 export class AttendanceService {
   private attendanceRepository = new AttendanceRepository();
@@ -464,7 +465,7 @@ export class AttendanceService {
     }
 
     // 9. Create the regularization request
-    return this.attendanceRepository.createRegularization({
+    const created = await this.attendanceRepository.createRegularization({
       companyId,
       userId,
       attendanceId: existingAttendance?.id || null,
@@ -479,6 +480,19 @@ export class AttendanceService {
       originalPunchOutOdometer,
       reason: payload.reason
     });
+
+    const requester = await prisma.user.findFirst({
+      where: { id: userId, companyId },
+      select: { managerId: true },
+    });
+    await notificationService.notifyRegularizationSubmitted({
+      requesterId: userId,
+      managerId: requester?.managerId ?? null,
+      companyId,
+      requestId: created.id,
+    });
+
+    return created;
   }
 
   public async getRegularizations(
@@ -636,6 +650,12 @@ export class AttendanceService {
       remarks: remarks ?? null,
       approverId: reviewerId,
       requesterId: request.userId,
+    });
+
+    await notificationService.notifyRegularizationReviewed({
+      requesterId: request.userId,
+      action,
+      requestId: id,
     });
 
     return result;

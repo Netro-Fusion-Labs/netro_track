@@ -1,6 +1,6 @@
 import { lightTheme as theme } from "../../../shared/theme/tokens";
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
@@ -12,6 +12,13 @@ import { useAuthStore } from '../stores/authStore';
 import { api } from '../../../shared/services/api';
 import NetInfo from '@react-native-community/netinfo';
 import { storage } from '../../../shared/utils/storage';
+import {
+  authenticateWithBiometrics,
+  biometricLabel,
+  getBiometricAvailability,
+  isBiometricUnlockEnabled,
+  offerBiometricOptIn,
+} from '../services/biometricAuth';
 
 const LOCAL_SALT = 'netrotrack_local_mpin_salt';
 
@@ -116,6 +123,9 @@ export function MpinScreen({ mode }: Props) {
   const [confirmPin, setConfirmPin] = useState<string>('');
   const [stage, setStage] = useState<'enter' | 'confirm'>('enter');
   const [loading, setLoading] = useState(false);
+  const [biometricReady, setBiometricReady] = useState(false);
+  const [biometricTypeLabel, setBiometricTypeLabel] = useState('Biometrics');
+  const biometricAttempted = useRef(false);
 
   const setMpinVerified = useAuthStore((state) => state.setMpinVerified);
   const setHasMpin = useAuthStore((state) => state.setHasMpin);
@@ -123,6 +133,26 @@ export function MpinScreen({ mode }: Props) {
 
   const isSetup = mode === 'setup';
   const activePin = stage === 'confirm' ? confirmPin : pin;
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { available, biometryType } = await getBiometricAvailability();
+      if (cancelled) return;
+      setBiometricReady(available && isBiometricUnlockEnabled() && mode === 'verify');
+      setBiometricTypeLabel(biometricLabel(biometryType));
+      if (available && isBiometricUnlockEnabled() && mode === 'verify' && !biometricAttempted.current) {
+        biometricAttempted.current = true;
+        const ok = await authenticateWithBiometrics(`Unlock with ${biometricLabel(biometryType)}`);
+        if (!cancelled && ok) {
+          setMpinVerified(true);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, setMpinVerified]);
 
   const handleKeyPress = (num: string) => {
     if (loading || activePin.length >= 4) return;
@@ -187,6 +217,7 @@ export function MpinScreen({ mode }: Props) {
       storage.set('local_mpin_hash', hashMpin(mpin));
       setHasMpin(true);
       setMpinVerified(true);
+      void offerBiometricOptIn();
     } catch (err: any) {
       const message = err.response?.data?.message ?? 'Failed to set MPIN. Please try again.';
       const isAuthError = err.response?.status === 401;
@@ -230,6 +261,7 @@ export function MpinScreen({ mode }: Props) {
       await api.post('/auth/mpin/verify', { mpin });
       storage.set('local_mpin_hash', hashMpin(mpin));
       setMpinVerified(true);
+      void offerBiometricOptIn();
     } catch (err: any) {
       const message = err.response?.data?.message ?? 'Incorrect MPIN. Please try again.';
       const errCode = err.response?.data?.error?.code;
@@ -379,6 +411,22 @@ export function MpinScreen({ mode }: Props) {
             </TouchableOpacity>
           </View>
         </View>
+
+        {!isSetup && biometricReady && (
+          <TouchableOpacity
+            onPress={async () => {
+              const ok = await authenticateWithBiometrics(`Unlock with ${biometricTypeLabel}`);
+              if (ok) setMpinVerified(true);
+            }}
+            style={styles.reloginBtn}
+            activeOpacity={0.7}
+            disabled={loading}
+          >
+            <Text style={[typography.buttonSm, { color: theme.colors.brand.primary }]}>
+              Use {biometricTypeLabel}
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {isSetup && stage === 'confirm' && (
           <TouchableOpacity onPress={resetSetup} style={styles.reloginBtn} activeOpacity={0.7}>

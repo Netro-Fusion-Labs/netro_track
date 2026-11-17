@@ -264,11 +264,13 @@ model Device {
   os           String
   model        String
   appVersion   String   @map("app_version")
+  fcmToken     String?  @map("fcm_token")
   registeredAt DateTime @default(now()) @map("registered_at")
 
   user User @relation(fields: [userId], references: [id])
 
   @@unique([userId, deviceId])
+  @@index([userId])
   @@map("devices")
 }
 

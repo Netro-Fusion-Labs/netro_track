@@ -111,9 +111,9 @@ export function EmployeeDashboard({ navigation }: { navigation: any }) {
           >
             {(() => {
               const actions = [
-                { label: 'Log Visit', icon: 'visits', screen: 'Visits', params: undefined, unreleased: true },
-                { label: 'Record Sale', icon: 'sales', screen: 'Sales', params: undefined, unreleased: true },
-                { label: 'Inspection', icon: 'inspect', screen: 'Inspections', params: undefined, unreleased: true },
+                { label: 'Log Visit', icon: 'visits', screen: 'Visits', params: undefined, unreleased: false },
+                { label: 'Record Sale', icon: 'sales', screen: 'Sales', params: undefined, unreleased: false },
+                { label: 'Inspection', icon: 'inspect', screen: 'Inspections', params: undefined, unreleased: false },
                 { label: 'Org Chart', icon: 'employees', screen: 'OrgChart', params: undefined, unreleased: false },
                 { label: 'History', icon: 'history', screen: 'AttendanceHistory', params: undefined, unreleased: false },
               ];

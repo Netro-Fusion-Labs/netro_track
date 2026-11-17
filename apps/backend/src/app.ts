@@ -2,9 +2,21 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { errorMiddleware } from './shared/middlewares/error.middleware';
 
 dotenv.config();
+
+function readBackendVersion(): string {
+  try {
+    const pkgPath = join(__dirname, '../package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as { version?: string };
+    return pkg.version ?? '0.0.0';
+  } catch {
+    return process.env.npm_package_version ?? '0.0.0';
+  }
+}
 
 const app = express();
 
@@ -14,7 +26,12 @@ app.use(express.json());
 
 // Health endpoint
 app.use('/health', (_req, res) => {
-  res.status(200).json({ success: true, message: 'Server is healthy' });
+  res.status(200).json({
+    success: true,
+    message: 'Server is healthy',
+    version: readBackendVersion(),
+    uptime: process.uptime(),
+  });
 });
 
 // Import modules
@@ -38,6 +55,7 @@ import { profileRouter } from './modules/profile/profile.routes';
 import { attendancePolicyRouter } from './modules/attendance-policy/attendance-policy.routes';
 import { policyRouter } from './modules/policy/policy.routes';
 import { authorizationRouter } from './modules/authorization/authorization.routes';
+import { appConfigRouter } from './modules/app-config/app-config.routes';
 import { roleHierarchyRouter } from './modules/role-hierarchy/role-hierarchy.routes';
 import path from 'path';
 
@@ -45,6 +63,7 @@ import path from 'path';
 app.use('/static/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Register routes
+app.use('/api/v1/app-config', appConfigRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/authorization', authorizationRouter);
 app.use('/api/v1/role-hierarchy', roleHierarchyRouter);

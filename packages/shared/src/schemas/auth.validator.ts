@@ -39,3 +39,14 @@ export const mpinLoginSchema = z.object({
 });
 
 export type MpinLoginInput = z.infer<typeof mpinLoginSchema>;
+
+/** Register / refresh FCM token for the authenticated device (POST /auth/device/register). */
+export const deviceRegisterSchema = z.object({
+  deviceId: z.string().min(1, { message: 'Device ID is required' }),
+  fcmToken: z.string().min(1, { message: 'FCM token is required' }),
+  os: z.string().min(1).optional(),
+  model: z.string().min(1).optional(),
+  appVersion: z.string().min(1).optional(),
+});
+
+export type DeviceRegisterInput = z.infer<typeof deviceRegisterSchema>;

@@ -1,12 +1,16 @@
 import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { LoginScreen } from '../features/auth/screens/LoginScreen';
 import { MpinScreen } from '../features/auth/screens/MpinScreen';
 import { ConsentScreen } from '../features/auth/screens/ConsentScreen';
+import { ForceUpdateScreen } from '../features/auth/screens/ForceUpdateScreen';
 import { RoleNavigator } from './RoleNavigator';
 import { useAuthStore } from '../features/auth/stores/authStore';
 import { useConsentStore, isConsentValid } from '../shared/stores/consentStore';
+import { useMinAppVersionGate } from '../shared/hooks/useMinAppVersionGate';
+import { useTheme } from '../shared/theme/ThemeProvider';
 
 const Stack = createStackNavigator();
 
@@ -19,11 +23,27 @@ function MpinVerifyScreen() {
 }
 
 export default function RootNavigator() {
+  const theme = useTheme();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isMpinVerified = useAuthStore((state) => state.isMpinVerified);
   const hasMpin = useAuthStore((state) => state.hasMpin);
   const consentState = useConsentStore();
   const consentAccepted = isConsentValid(consentState);
+  const versionGate = useMinAppVersionGate();
+
+  if (versionGate.checking) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface.background }}>
+        <ActivityIndicator color={theme.colors.brand.primary} />
+      </View>
+    );
+  }
+
+  if (versionGate.blocked) {
+    return (
+      <ForceUpdateScreen minVersion={versionGate.minVersion} storeUrl={versionGate.storeUrl} />
+    );
+  }
 
   const authGate = !isAuthenticated
     ? 'login'

@@ -79,6 +79,7 @@ export const API = {
   reportsAttendance: '/reports/attendance',
   reportsVisits: '/reports/visits',
   reportsSales: '/reports/sales',
+  reportsInspections: '/reports/inspections',
 
   mpinSetup: '/auth/mpin/setup',
   profilePictureUploadUrl: '/users/me/profile-picture/upload-url',

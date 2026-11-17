@@ -23,25 +23,21 @@
 | [Application Architecture](architecture/application-architecture.md) | Layered architecture, module isolation |
 | [Multi-Tenancy](architecture/multi-tenancy.md) | Tenant isolation, data boundaries |
 | [Authentication & Authorization](architecture/authentication-authorization.md) | JWT, MPIN, biometric, RBAC |
+| [Dynamic Authorization](architecture/dynamic-authorization.md) | Capabilities, entitlements, access groups, timeline |
 | [Realtime Architecture](architecture/realtime-architecture.md) | Socket.IO, live tracking |
 | [Offline Architecture](architecture/offline-architecture.md) | Offline-first, sync engine |
 | [Image Upload Architecture](architecture/image-upload-architecture.md) | Signed URL flow, R2 integration |
 | [GPS Tracking Architecture](architecture/gps-tracking-architecture.md) | Background tracking, batch sync |
 | [Scalability Architecture](architecture/scalability-architecture.md) | Horizontal scaling, caching |
+| [Web Portal Architecture](architecture/web-portal-architecture.md) | Angular admin portal (`apps/web`) |
 
 ### Features
 | Document | Purpose |
 |----------|---------|
-| [Authentication](features/authentication.md) | Login, MPIN, biometric, device registration |
-| [Attendance](features/attendance.md) | Punch in/out, working hours, history |
-| [Live Tracking](features/live-tracking.md) | GPS tracking, route playback |
-| [Customer Visits](features/customer-visits.md) | Visit creation, verification |
-| [Product Sales](features/product-sales.md) | Sales recording |
-| [Inspections](features/inspections.md) | Field inspections |
-| [Reports](features/reports.md) | All report types by role |
-| [Notifications](features/notifications.md) | Push notification types |
-| [Dashboards](features/dashboards.md) | Dashboard specs per role |
+| [Feature Specifications](features/feature-specifications.md) | Consolidated auth, attendance, tracking, visits, sales, inspections, reports, notifications, dashboards |
+| [Attendance Regularization](features/attendance-regularization.md) | Regularization requests and approval workflow |
 | [User Management](features/user-management.md) | User creation, Access Roles, Designation Titles, Timeline Audit Engine |
+| [Feature Flags](features/feature-flags.md) | Module entitlements and feature toggles |
 
 ### Backend
 | Document | Purpose |
@@ -94,35 +90,23 @@
 |----------|---------|
 | [Design System Overview](design-system/design-system-overview.md) | Philosophy and architecture |
 | [Theme Engine](design-system/theme-engine.md) | Multi-theme, dynamic, white-label |
-| [Color System](design-system/color-system.md) | Color tokens, dark mode |
-| [Typography](design-system/typography.md) | Font scales |
-| [Spacing & Elevation](design-system/spacing-elevation.md) | Spacing and shadow tokens |
-| [Component Library](design-system/component-library.md) | Component catalog |
-| [Iconography](design-system/iconography.md) | Icon system |
-| [Map Styles](design-system/map-styles.md) | Map theming |
+| [Animation Guidelines](design-system/animation-guidelines.md) | Motion and transition standards |
 
 ### Security
 | Document | Purpose |
 |----------|---------|
 | [Security Overview](security/security-overview.md) | Security architecture |
-| [Authentication Security](security/authentication-security.md) | JWT, MPIN, biometric |
-| [Authorization Security](security/authorization-security.md) | RBAC, permissions |
-| [Data Security](security/data-security.md) | Encryption, isolation |
-| [API Security](security/api-security.md) | Rate limiting, headers |
-| [Device Security](security/device-security.md) | Device binding |
-| [Audit Logging](security/audit-logging.md) | Audit trail |
-| [Compliance](security/compliance.md) | GDPR, data residency |
+| [Role Hierarchy](security/role-hierarchy.md) | Tenant company-role ranks and approval authority |
+| [Environment Variables](security/environment-variables.md) | Secrets and runtime configuration catalog |
 
 ### Development
 | Document | Purpose |
 |----------|---------|
 | [Development Setup](development/development-setup.md) | Local environment |
 | [Coding Standards](development/coding-standards.md) | TypeScript, ESLint, Prettier |
-| [Folder Conventions](development/folder-conventions.md) | Naming patterns |
 | [Git Workflow](development/git-workflow.md) | Branching strategy |
-| [Commit Standards](development/commit-standards.md) | Conventional commits |
-| [Code Review Checklist](development/code-review-checklist.md) | Review criteria |
-| [Environment Variables](development/environment-variables.md) | All env vars |
+| [NPM Workspaces](development/npm-workspaces.md) | Monorepo package management |
+| [AGENTS.md](../AGENTS.md) | AI/coding standards (folder conventions, commit style, review rules) |
 
 ### Testing
 | Document | Purpose |
@@ -130,33 +114,20 @@
 | [Testing Strategy](testing/testing-strategy.md) | Test pyramid, coverage |
 | [Backend Testing](testing/backend-testing.md) | API test patterns |
 | [Mobile Testing](testing/mobile-testing.md) | Component test patterns |
-| [Test Data Strategy](testing/test-data-strategy.md) | Seed data, fixtures |
 
 ### Deployment
 | Document | Purpose |
 |----------|---------|
 | [Deployment Overview](deployment/deployment-overview.md) | CI/CD architecture |
-| [Infrastructure](deployment/infrastructure.md) | AWS, Nginx, PM2 |
-| [CI/CD Pipeline](deployment/ci-cd-pipeline.md) | GitHub Actions |
-| [Environment Strategy](deployment/environment-strategy.md) | Dev/Staging/Prod |
-| [Backup & DR](deployment/backup-disaster-recovery.md) | Backup, recovery |
-| [Runbook](deployment/runbook.md) | Operational procedures |
+| [CI/CD Pipeline](deployment/ci-cd-pipeline.md) | GitHub Actions (see also `.github/workflows/`) |
+| [Infrastructure as Code](../.github/workflows/terraform.yml) | Terraform provisioning workflow |
+| [Production Deploy Workflow](../.github/workflows/production.yml) | Production release pipeline |
 
 ### Planning & Roadmap
 | Document | Purpose |
 |----------|---------|
-| [Execution Plan](planning/execution-plan.md) | Project execution strategy |
-| [Sprint Planning](planning/sprint-planning.md) | Sprint structure |
-| [Dependency Graph](planning/dependency-graph.md) | Feature dependencies |
-| [Critical Path](planning/critical-path.md) | Critical path analysis |
-| [Risk Register](planning/risk-register.md) | Risk catalog |
-| [Acceptance Criteria](planning/acceptance-criteria.md) | Definition of Done |
-| [Release Roadmap](roadmap/release-roadmap.md) | Phase 1–4 breakdown |
-| [MVP Scope](roadmap/mvp-scope.md) | MVP features |
-| [V1 Scope](roadmap/v1-scope.md) | Version 1 scope |
-| [V2 Scope](roadmap/v2-scope.md) | Version 2 scope |
-| [V3 Scope](roadmap/v3-scope.md) | Version 3 scope |
-| [Future Modules](roadmap/future-modules.md) | Future module specs |
+| [Execution Plan](planning/execution-plan.md) | Project execution strategy (includes sprint/critical-path guidance) |
+| [Release Roadmap](roadmap/release-roadmap.md) | V1–V3 rollout plan |
 
 ---
 
@@ -184,3 +155,4 @@ This documentation follows the product versioning. Major documentation changes a
 | Version | Date | Description |
 |---------|------|-------------|
 | 0.1.0 | 2026-07-13 | Initial documentation repository |
+| 0.2.0 | 2026-11-17 | Fixed dead index links; documented Angular web portal + dynamic authorization + BullMQ/FCM |

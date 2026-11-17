@@ -33,9 +33,10 @@ R2_SECRET_ACCESS_KEY=<r2 secret key>
 R2_BUCKET_NAME=netrotrack-bucket
 R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
 
-# ───── Firebase ─────
+# ───── Firebase Admin (FCM) — optional; push soft-disables when unset ─────
 FIREBASE_PROJECT_ID=<firebase project id>
-FIREBASE_SERVICE_ACCOUNT=<path to service account JSON>
+FIREBASE_CLIENT_EMAIL=<service account client email>
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
 # ───── Rate Limiting ─────
 RATE_LIMIT_WINDOW_MS=60000

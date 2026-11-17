@@ -19,6 +19,9 @@ All queues are backed by Redis via BullMQ.
 | `cleanup` | `retention-cleanup` | Cron: `0 3 * * *` | 1 | Delete old GPS data, expired tokens |
 | `cleanup` | `orphan-images` | Cron: `0 4 * * 0` | 1 | Clean orphaned R2 uploads (weekly) |
 | `sync` | `broadcast-update` | On-demand | 10 | Emit Socket.IO events asynchronously |
+| `attendance` | `midnight-auto-punch-out` | Cron: `0 * * * *` | 1 | Close open punches for tenants at local midnight (`company.timezone`) |
+
+Implementation lives in `apps/backend/src/modules/jobs/` (BullMQ + Redis) and `apps/backend/src/modules/notifications/` (Firebase Admin FCM). Workers start from `server.ts` when `REDIS_URL` is set.
 
 ---
 

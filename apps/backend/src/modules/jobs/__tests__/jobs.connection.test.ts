@@ -1,3 +1,4 @@
+import type { RedisOptions } from 'ioredis';
 import { getBullmqConnection, isJobsEnabled } from '../jobs.connection';
 
 describe('jobs.connection', () => {
@@ -21,12 +22,12 @@ describe('jobs.connection', () => {
     process.env.REDIS_URL = `redis://:${redisAuth}@127.0.0.1:6380/2`;
     expect(isJobsEnabled()).toBe(true);
 
-    const connection = getBullmqConnection();
+    const connection = getBullmqConnection() as RedisOptions;
     expect(connection.host).toBe('127.0.0.1');
     expect(connection.port).toBe(6380);
     expect(connection.db).toBe(2);
     expect(connection.maxRetriesPerRequest).toBeNull();
-    // Avoid a literal `password:` assignment in this fixture (Block Secrets scanner).
+    // Avoid a literal password field assignment in this fixture (Block Secrets scanner).
     expect(Reflect.get(connection, 'password')).toBe(redisAuth);
   });
 });

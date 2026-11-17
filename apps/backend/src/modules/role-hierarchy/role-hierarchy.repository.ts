@@ -45,11 +45,18 @@ export class RoleHierarchyRepository {
   // ── Commands ─────────────────────────────────────────────────────────────────
 
   public async createCompanyRole(companyId: string, data: CreateCompanyRoleInput): Promise<CompanyRole> {
+    const code = data.code.toUpperCase();
+
+    // Hard-delete any soft-deleted role with the same code so the unique constraint doesn't block re-creation.
+    await prisma.companyRole.deleteMany({
+      where: { companyId, code, deletedAt: { not: null } },
+    });
+
     return prisma.companyRole.create({
       data: {
         companyId,
         name: data.name,
-        code: data.code.toUpperCase(),
+        code,
         rank: data.rank,
         description: data.description ?? null,
         isActive: data.isActive ?? true,

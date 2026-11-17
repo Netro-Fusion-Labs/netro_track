@@ -1,25 +1,17 @@
 import { Router } from 'express';
 import { TrackingController } from './tracking.controller';
 import { authenticateToken } from '../../shared/middlewares/auth.middleware';
-import { requireRoles } from '../../shared/middlewares/role.middleware';
-import { Role } from '@prisma/client';
+import { requirePermission } from '../../shared/middlewares/permission.middleware';
 
 const router = Router();
 const controller = new TrackingController();
 
 router.use(authenticateToken);
 
-// Any authenticated user can sync their own GPS batch
-router.post('/sync', controller.syncBatch);
-
-// Own route query (employees) or any user route (managers/admins)
+// Field employees sync their own GPS while punched in / tracked
+router.post('/sync', requirePermission('attendance.punch.create'), controller.syncBatch);
+// Own-route access is scoped in the controller; managers also use this for playback
 router.get('/route', controller.getRoute);
-
-// Live team locations — managers, HR, and admins
-router.get(
-  '/live',
-  requireRoles(Role.MANAGER, Role.HR, Role.COMPANY_ADMIN, Role.SUPER_ADMIN),
-  controller.getLiveLocations
-);
+router.get('/live', requirePermission('tracking.live_map.view'), controller.getLiveLocations);
 
 export { router as trackingRouter };

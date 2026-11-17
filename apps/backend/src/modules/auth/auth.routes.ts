@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { AuthController } from './auth.controller';
 import { validate } from '../../shared/middlewares/validate.middleware';
 import { authenticateToken } from '../../shared/middlewares/auth.middleware';
-import { loginSchema, setupMpinSchema, mpinLoginSchema } from '@netrotrack/shared';
+import { loginSchema, setupMpinSchema, mpinLoginSchema, deviceRegisterSchema } from '@netrotrack/shared';
 
 const router = Router();
 const controller = new AuthController();
@@ -26,5 +26,8 @@ router.post('/mpin/setup', authenticateToken, validate(setupMpinSchema), control
 
 // Verify MPIN for daily re-authentication
 router.post('/mpin/verify', authenticateToken, validate(setupMpinSchema), controller.verifyMpin);
+
+// Register / refresh FCM device token
+router.post('/device/register', authenticateToken, validate(deviceRegisterSchema), controller.registerDevice);
 
 export { router as authRouter };

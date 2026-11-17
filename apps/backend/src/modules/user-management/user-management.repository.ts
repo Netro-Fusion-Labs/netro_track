@@ -221,7 +221,7 @@ export class UserManagementRepository {
     const targetRank: number = ROLE_RANK[targetRole] ?? 0;
 
     const supervisorRoles = (Object.values(Role) as string[]).filter(
-      (r) => r !== 'FIELD_EMPLOYEE' && (ROLE_RANK[r] ?? 0) > targetRank
+      (r) => r !== 'FIELD_EMPLOYEE' && (ROLE_RANK[r] ?? 0) >= targetRank
     ) as Role[];
 
     if (supervisorRoles.length === 0) return [];

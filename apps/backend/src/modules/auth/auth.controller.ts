@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
 import { AuthenticatedRequest } from '../../shared/types/request';
+import { notificationService } from '../notifications/notification.service';
 
 export class AuthController {
   private authService = new AuthService();
@@ -127,6 +128,35 @@ export class AuthController {
         success: true,
         message: 'Demo login users fetched successfully',
         data: result,
+        meta: { timestamp: new Date().toISOString() },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * POST /auth/device/register (authenticated)
+   * Upserts the device FCM token for push notifications.
+   */
+  public registerDevice = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+      const { deviceId, fcmToken, os, model, appVersion } = req.body;
+
+      await notificationService.registerDeviceToken({
+        userId,
+        deviceId,
+        fcmToken,
+        os,
+        model,
+        appVersion,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Device registered for push notifications',
+        data: null,
         meta: { timestamp: new Date().toISOString() },
       });
     } catch (error) {

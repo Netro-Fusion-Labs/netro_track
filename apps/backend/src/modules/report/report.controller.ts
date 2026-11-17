@@ -1,39 +1,52 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../shared/types/request';
-import { ReportService } from './report.service';
+import { ReportService, type ReportExportResult } from './report.service';
 import {
   attendanceReportQuerySchema,
   visitsReportQuerySchema,
   salesReportQuerySchema,
+  inspectionsReportQuerySchema,
 } from '@netrotrack/shared';
 
 export class ReportController {
   private reportService = new ReportService();
+
+  private sendExport(res: Response, exported: ReportExportResult, successMessage: string): void {
+    if (exported.format === 'json') {
+      res.status(200).json({
+        success: true,
+        message: successMessage,
+        data: exported.body,
+        meta: { timestamp: new Date().toISOString() },
+      });
+      return;
+    }
+
+    res.setHeader('Content-Type', exported.contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${exported.filename}"`);
+    res.status(200).send(exported.body);
+  }
+
+  private effectiveUserId(role: string, requesterId: string, userId?: string): string | undefined {
+    return role === 'EMPLOYEE' ? requesterId : userId;
+  }
 
   /** GET /api/v1/reports/attendance */
   public getAttendanceReport = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const companyId = req.user!.companyId;
       const role = req.user!.role;
-      const { startDate, endDate, userId } = attendanceReportQuerySchema.parse(req.query);
+      const { startDate, endDate, userId, format } = attendanceReportQuerySchema.parse(req.query);
+      const effectiveUserId = this.effectiveUserId(role, req.user!.id, userId);
 
-      // Field employees can only see their own reports
-      const effectiveUserId =
-        role === 'EMPLOYEE' ? req.user!.id : userId;
-
-      const report = await this.reportService.getAttendanceReport(
+      const exported = await this.reportService.exportAttendance(
         companyId,
         startDate,
         endDate,
+        format,
         effectiveUserId
       );
-
-      res.status(200).json({
-        success: true,
-        message: 'Attendance report generated',
-        data: report,
-        meta: { timestamp: new Date().toISOString() },
-      });
+      this.sendExport(res, exported, 'Attendance report generated');
     } catch (error) {
       next(error);
     }
@@ -44,25 +57,18 @@ export class ReportController {
     try {
       const companyId = req.user!.companyId;
       const role = req.user!.role;
-      const { startDate, endDate, userId, customerId } = visitsReportQuerySchema.parse(req.query);
+      const { startDate, endDate, userId, customerId, format } = visitsReportQuerySchema.parse(req.query);
+      const effectiveUserId = this.effectiveUserId(role, req.user!.id, userId);
 
-      const effectiveUserId =
-        role === 'EMPLOYEE' ? req.user!.id : userId;
-
-      const report = await this.reportService.getVisitsReport(
+      const exported = await this.reportService.exportVisits(
         companyId,
         startDate,
         endDate,
+        format,
         effectiveUserId,
         customerId
       );
-
-      res.status(200).json({
-        success: true,
-        message: 'Visits report generated',
-        data: report,
-        meta: { timestamp: new Date().toISOString() },
-      });
+      this.sendExport(res, exported, 'Visits report generated');
     } catch (error) {
       next(error);
     }
@@ -73,25 +79,39 @@ export class ReportController {
     try {
       const companyId = req.user!.companyId;
       const role = req.user!.role;
-      const { startDate, endDate, userId, customerId } = salesReportQuerySchema.parse(req.query);
+      const { startDate, endDate, userId, customerId, format } = salesReportQuerySchema.parse(req.query);
+      const effectiveUserId = this.effectiveUserId(role, req.user!.id, userId);
 
-      const effectiveUserId =
-        role === 'EMPLOYEE' ? req.user!.id : userId;
-
-      const report = await this.reportService.getSalesReport(
+      const exported = await this.reportService.exportSales(
         companyId,
         startDate,
         endDate,
+        format,
         effectiveUserId,
         customerId
       );
+      this.sendExport(res, exported, 'Sales report generated');
+    } catch (error) {
+      next(error);
+    }
+  };
 
-      res.status(200).json({
-        success: true,
-        message: 'Sales report generated',
-        data: report,
-        meta: { timestamp: new Date().toISOString() },
-      });
+  /** GET /api/v1/reports/inspections */
+  public getInspectionsReport = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const companyId = req.user!.companyId;
+      const role = req.user!.role;
+      const { startDate, endDate, userId, format } = inspectionsReportQuerySchema.parse(req.query);
+      const effectiveUserId = this.effectiveUserId(role, req.user!.id, userId);
+
+      const exported = await this.reportService.exportInspections(
+        companyId,
+        startDate,
+        endDate,
+        format,
+        effectiveUserId
+      );
+      this.sendExport(res, exported, 'Inspections report generated');
     } catch (error) {
       next(error);
     }

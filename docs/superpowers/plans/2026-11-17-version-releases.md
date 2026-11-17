@@ -159,7 +159,26 @@ Verify package **names** match `package.json` `"name"` fields exactly (`netrotra
 
 ---
 
-### Task 5: Baseline versions + smoke release dry-run
+### Task 5: Mobile min-version force-upgrade (env already documented)
+
+**Files:**
+- Create or Modify: backend app-config / auth bootstrap endpoint returning `minAppVersionAndroid`, `minAppVersionIos` from env
+- Create: mobile blocking update screen + check on app start / post-login
+- Modify: `docs/ops/release-checklist.md` (when to bump `MIN_APP_VERSION_*`)
+
+**Note:** Grep shows no existing `MIN_APP_VERSION` consumer in `apps/` — this task implements the path designed in the spec.
+
+- [ ] **Step 1:** Expose min versions from backend (dedicated lightweight route or extend an existing bootstrap payload). Do not invent store URLs; optional env `ANDROID_STORE_URL` / `IOS_STORE_URL` later.
+
+- [ ] **Step 2:** Mobile: compare marketing SemVer from `appVersion.ts` to server min; if below, show non-dismissible Update required UI (MPIN/main app gated).
+
+- [ ] **Step 3:** Unit-test SemVer compare helper (edge: equal, below, above).
+
+- [ ] **Step 4:** Commit: `feat(mobile): enforce minimum app version from backend config`
+
+---
+
+### Task 6: Baseline versions + smoke release dry-run
 
 **Files:**
 - Modify: `apps/backend/package.json`, `apps/web/package.json`, `apps/mobile/package.json` versions as agreed (document choice in matrix intro: e.g. set all to `1.0.0-rc.0` or keep current and note “pre-formal”)
@@ -178,6 +197,8 @@ Verify package **names** match `package.json` `"name"` fields exactly (`netrotra
 ---
 
 ## Verification checklist (plan complete when)
+
+> Tasks renumbered: force-upgrade is Task 5; baseline dry-run is Task 6.
 
 - [ ] `npx changeset` only offers backend, web, mobile
 - [ ] Sync script fails if gradle/pbxproj intentionally broken in a test

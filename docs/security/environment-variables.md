@@ -50,6 +50,8 @@ MIN_APP_VERSION_ANDROID=1.0.0
 MIN_APP_VERSION_IOS=1.0.0
 ```
 
+Mobile clients compare marketing SemVer to these values via `GET /api/v1/app-config`. Bump them when forcing an upgrade — see [Release Checklist](../ops/release-checklist.md).
+
 ## Rules
 
 - **Never** commit `.env` files to version control.

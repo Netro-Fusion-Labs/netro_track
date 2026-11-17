@@ -205,11 +205,11 @@ Also add short release docs:
 
 ## 12. Definition of Done
 
-- [ ] `.changeset/config.json` with ignore list and independent packages
-- [ ] Initial CHANGELOG stubs + first changesets workflow documented
-- [ ] `scripts/sync-mobile-native-version.mjs` with strict assertions + npm script
-- [ ] `docs/releases/feature-version-matrix.md` seeded with current known features
-- [ ] Release README + ops checklist
-- [ ] Web/mobile About (or equivalent) shows version; backend `/health` exposes version
-- [ ] Min-version env docs cross-linked; force-upgrade path designed (implement if not already present)
-- [ ] Spec self-review complete; implementation plan written
+- [x] `.changeset/config.json` with ignore list and independent packages
+- [x] Initial CHANGELOG stubs + first changesets workflow documented
+- [x] `scripts/sync-mobile-native-version.mjs` with strict assertions + npm script
+- [x] `docs/releases/feature-version-matrix.md` seeded with current known features
+- [x] Release README + ops checklist
+- [x] Web/mobile About (or equivalent) shows version; backend `/health` exposes version
+- [x] Min-version env docs cross-linked; force-upgrade path implemented (`GET /api/v1/app-config` + ForceUpdateScreen)
+- [x] Spec self-review complete; implementation plan written

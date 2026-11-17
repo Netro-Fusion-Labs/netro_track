@@ -123,6 +123,13 @@
 | [Infrastructure as Code](../.github/workflows/terraform.yml) | Terraform provisioning workflow |
 | [Production Deploy Workflow](../.github/workflows/production.yml) | Production release pipeline |
 
+### Releases
+| Document | Purpose |
+|----------|---------|
+| [Releases README](releases/README.md) | Changesets workflow, tags, sync script |
+| [Feature ↔ Version Matrix](releases/feature-version-matrix.md) | Cross-app feature compatibility |
+| [Release Checklist](ops/release-checklist.md) | Operator steps for cutting a release |
+
 ### Planning & Roadmap
 | Document | Purpose |
 |----------|---------|
@@ -150,7 +157,7 @@ For new team members, read in this order:
 
 ## Versioning
 
-This documentation follows the product versioning. Major documentation changes are tracked via Git history.
+App releases use independent SemVer (backend / web / mobile) via Changesets — see [releases/README.md](releases/README.md). Documentation changes are tracked via Git history.
 
 | Version | Date | Description |
 |---------|------|-------------|

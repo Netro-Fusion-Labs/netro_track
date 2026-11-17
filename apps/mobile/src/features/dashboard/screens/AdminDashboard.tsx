@@ -116,10 +116,10 @@ export function AdminDashboard({ navigation }: { navigation: any }) {
               { label: 'Org Chart', icon: 'employees', onPress: () => navigation.navigate('OrgChart'), unreleased: false },
               { label: 'Policies', icon: 'attendance', onPress: () => navigation.navigate('Employees', { screen: 'AttendancePolicies' }), unreleased: false },
               { label: 'Requests', icon: 'attendance', onPress: () => navigation.navigate('Employees', { screen: 'ManagerRegularizations' }), badgeCount: pendingRequests.length, unreleased: false },
-              { label: 'Clients', icon: 'customers', onPress: () => navigation.navigate('Customers'), unreleased: true },
-              { label: 'Products', icon: 'products', onPress: () => navigation.navigate('Products'), unreleased: true },
-              { label: 'Visits', icon: 'visits', onPress: () => navigation.navigate('Visits'), unreleased: true },
-              { label: 'Sales', icon: 'sales', onPress: () => navigation.navigate('Sales'), unreleased: true },
+              { label: 'Clients', icon: 'customers', onPress: () => navigation.navigate('Customers'), unreleased: false },
+              { label: 'Products', icon: 'products', onPress: () => navigation.navigate('Products'), unreleased: false },
+              { label: 'Visits', icon: 'visits', onPress: () => navigation.navigate('Visits'), unreleased: false },
+              { label: 'Sales', icon: 'sales', onPress: () => navigation.navigate('Sales'), unreleased: false },
             ].map((act) => (
               <TouchableOpacity
                 key={act.label}

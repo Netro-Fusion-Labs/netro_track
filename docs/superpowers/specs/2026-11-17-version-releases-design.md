@@ -58,8 +58,8 @@ Tracked for interactive release prompts:
 
 In `.changeset/config.json`, set `ignore` so `npx changeset` cleanly scopes prompts:
 
-- Root workspace meta package name (`netrotrack` from root `package.json`)
 - `@netrotrack/shared` (unless intentionally removed from ignore for a shared-contract release)
+- Note: the root meta package (`netrotrack`) is not a npm workspace package Changesets discovers, so it never appears in prompts; listing it in `ignore` is invalid and rejected by Changesets validation.
 
 Also:
 

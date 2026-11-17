@@ -12,6 +12,7 @@ import { Company, ModuleKey, moduleEnabled } from '../../core/models/domain';
 import { NetroIcon, IconName } from '../../ui/icon';
 import { NetroBadge, NetroSkeleton, NetroState } from '../../ui/primitives';
 import { NetroPageHeader, NetroPanel, NetroTabs } from '../../ui/patterns';
+import { WEB_VERSION } from '../../core/app-version';
 
 type Section = 'appearance' | 'organisation' | 'capabilities' | 'account';
 
@@ -90,6 +91,7 @@ export class SettingsComponent {
   readonly modules = MODULES;
   readonly timezones = TIMEZONES;
   readonly currencies = CURRENCIES;
+  readonly webVersion = WEB_VERSION;
 
   readonly user = this.api.user;
   readonly canAdminister = computed(() =>

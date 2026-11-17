@@ -32,6 +32,7 @@ import {
   isBiometricUnlockEnabled,
   setBiometricUnlockEnabled,
 } from '../../auth/services/biometricAuth';
+import { APP_BUILD, APP_VERSION } from '../../../shared/constants/appVersion';
 
 export function ProfileScreen({ navigation }: any) {
   const theme = useTheme();
@@ -326,6 +327,9 @@ export function ProfileScreen({ navigation }: any) {
         <View style={styles.aboutBrand}>
           <BrandLogo variant="banner" size={200} />
           <Text style={[typography.caption, { color: theme.colors.text.tertiary, marginTop: 8, textAlign: 'center' }]}>
+            App {APP_VERSION} (build {APP_BUILD})
+          </Text>
+          <Text style={[typography.caption, { color: theme.colors.text.tertiary, marginTop: 4, textAlign: 'center' }]}>
             Track. Manage. Perform. · Powered by NetroFusion Labs
           </Text>
         </View>
